@@ -317,30 +317,49 @@ export default function MultiplayerBoard({
         const { family, members } = getInitialFamilyDisplay(initial);
         const compatFinals = getCompatibleFinals(final);
         return (
-          <div className="flex-none px-4 py-3 bg-slate-800 border-t border-slate-700 space-y-2">
-            <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-bold text-white">{currentWord.word.lastChar}</span>
-              <span className="text-slate-300 text-sm font-mono">{initial || '∅'}{final}</span>
-              <span className="text-slate-600 text-xs">exact char → +10</span>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-slate-500 text-xs w-16 shrink-0">Initials:</span>
-              {members.length > 0 ? (
-                <>
-                  <span className="text-slate-400 text-xs">{family} —</span>
-                  {members.map(m => (
-                    <span key={m} className={`px-1.5 py-0.5 rounded text-xs font-mono ${m === initial ? 'bg-emerald-700 text-emerald-200' : 'bg-slate-700 text-slate-300'}`}>{m}</span>
-                  ))}
-                </>
-              ) : <span className="text-slate-500 text-xs">vowel-start only</span>}
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-slate-500 text-xs w-16 shrink-0">Finals:</span>
-              {compatFinals.map(cf => (
-                <span key={cf.final} className={`px-1.5 py-0.5 rounded text-xs font-mono ${cf.type === 'exact' ? 'bg-emerald-700 text-emerald-200' : cf.type === 'strong' ? 'bg-sky-800 text-sky-200' : 'bg-amber-900 text-amber-200'}`}>
-                  {cf.final}{cf.type === 'strong' && ' ≈'}{cf.type === 'weak' && ' ~'}
+          <div className="flex-none bg-slate-800 border-t-2 border-emerald-700">
+            {/* Word display */}
+            <div className="px-4 pt-4 pb-3 flex items-start gap-4">
+              <div className="flex flex-col items-center">
+                <span className="text-5xl font-bold text-white tracking-wider leading-none">
+                  {currentWord.word.simplified}
                 </span>
-              ))}
+                <span className="text-emerald-400 text-base font-mono mt-1">
+                  {currentWord.word.pinyin}
+                </span>
+              </div>
+              <div className="flex-1 flex flex-col justify-center pt-1">
+                <span className="text-slate-200 text-sm leading-snug">
+                  {currentWord.word.english}
+                </span>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-slate-500 text-xs">Chain from last character:</span>
+                  <span className="text-2xl font-bold text-emerald-400">{currentWord.word.lastChar}</span>
+                  <span className="text-slate-400 text-sm font-mono">{initial || '∅'}{final}</span>
+                </div>
+              </div>
+            </div>
+            {/* Hints row */}
+            <div className="px-4 pb-3 flex flex-wrap gap-x-4 gap-y-1.5">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-slate-500 text-xs">Initials:</span>
+                {members.length > 0 ? (
+                  <>
+                    <span className="text-slate-500 text-xs">{family} —</span>
+                    {members.map(m => (
+                      <span key={m} className={`px-1.5 py-0.5 rounded text-xs font-mono ${m === initial ? 'bg-emerald-700 text-emerald-200' : 'bg-slate-700 text-slate-300'}`}>{m}</span>
+                    ))}
+                  </>
+                ) : <span className="text-slate-500 text-xs">vowel-start only</span>}
+              </div>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-slate-500 text-xs">Finals:</span>
+                {compatFinals.map(cf => (
+                  <span key={cf.final} className={`px-1.5 py-0.5 rounded text-xs font-mono ${cf.type === 'exact' ? 'bg-emerald-700 text-emerald-200' : cf.type === 'strong' ? 'bg-sky-800 text-sky-200' : 'bg-amber-900 text-amber-200'}`}>
+                    {cf.final}{cf.type === 'strong' && ' ≈'}{cf.type === 'weak' && ' ~'}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         );
