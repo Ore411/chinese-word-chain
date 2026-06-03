@@ -289,7 +289,7 @@ export default function Home() {
         {/* Header */}
         <div className="text-center mb-2">
           <h1 className="text-6xl font-bold tracking-wide mb-2">词语接龙</h1>
-          <p className="text-slate-300 text-lg font-medium">Mandarin Word Chain</p>
+          <p className="text-slate-300 text-lg font-medium">Chinese Word Chain</p>
           <p className="text-slate-500 text-sm mt-1">Chain Chinese words by sound or shared characters</p>
         </div>
 

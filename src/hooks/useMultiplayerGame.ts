@@ -60,7 +60,7 @@ type ServerMsg =
   | { type: 'state'; state: RoomState }
   | { type: 'error'; message: string };
 
-const PARTYKIT_HOST = process.env.NEXT_PUBLIC_PARTYKIT_HOST ?? 'mandarin-word-chain.ore411.partykit.dev';
+const PARTYKIT_HOST = process.env.NEXT_PUBLIC_PARTYKIT_HOST ?? 'chinese-word-chain.ore411.partykit.dev';
 
 function getOrCreateClientId(): string {
   const key = 'mpClientId';

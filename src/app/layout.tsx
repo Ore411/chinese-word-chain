@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "词语接龙 · Mandarin Word Chain",
-  description: "Chain Mandarin words by character or phonetic similarity",
+  title: "词语接龙 · Chinese Word Chain",
+  description: "Chain Chinese words by character or phonetic similarity",
 };
 
 export default function RootLayout({

@@ -1,5 +1,5 @@
 {
-  "name": "mandarin-word-chain",
+  "name": "chinese-word-chain",
   "main": "party/src/game.ts",
   "compatibilityDate": "2023-09-27"
 }
