@@ -398,7 +398,7 @@ export default function GameBoard({
               </div>
               {/* Meaning + chain target */}
               <div className="flex-1 flex flex-col justify-center pt-1">
-                <span className="text-slate-200 text-sm leading-snug">
+                <span className="text-white text-base leading-snug font-medium">
                   {currentWord.word.english}
                 </span>
                 <div className="flex items-center gap-2 mt-2">
