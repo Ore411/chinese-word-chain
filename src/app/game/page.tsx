@@ -13,6 +13,8 @@ function GameContent() {
   const submode = (searchParams.get('submode') ?? undefined) as VsSubmode | undefined;
   const levelParam = searchParams.get('level');
   const computerLevel = (levelParam ? parseInt(levelParam) : null) as ComputerLevel;
+  const timeParam = searchParams.get('time');
+  const turnSeconds = timeParam && [15, 30, 60].includes(parseInt(timeParam)) ? parseInt(timeParam) : undefined;
 
   const {
     dictionaryLoading, status, mode: activeMode, vsSubmode, computerLevel: activeComputerLevel,
@@ -23,9 +25,9 @@ function GameContent() {
 
   useEffect(() => {
     if (status === 'ready') {
-      startGame(mode, submode, computerLevel);
+      startGame(mode, submode, computerLevel, turnSeconds);
     }
-  }, [status, mode, submode, computerLevel, startGame]);
+  }, [status, mode, submode, computerLevel, turnSeconds, startGame]);
 
   if (dictionaryLoading || status === 'loading' || status === 'ready') {
     return (

@@ -65,6 +65,7 @@ export function useGameState() {
 
   // Refs so callbacks always see current values
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const turnSecondsRef = useRef<number>(TURN_SECONDS);
   const dictionaryRef = useRef<WordEntry[]>([]);
   const chainRef = useRef<ChainEntry[]>([]);
   const scoresRef = useRef<[number, number]>([0, 0]);
@@ -106,7 +107,7 @@ export function useGameState() {
 
   const startTimer = useCallback(() => {
     stopTimer();
-    setTimeRemaining(TURN_SECONDS);
+    setTimeRemaining(turnSecondsRef.current);
     timeoutFiredRef.current = false;
     timerRef.current = setInterval(() => {
       setTimeRemaining(t => {
@@ -165,7 +166,8 @@ export function useGameState() {
     };
   }, [newChainSegment]);
 
-  const startGame = useCallback((selectedMode: GameMode, selectedVsSubmode?: VsSubmode, selectedComputerLevel?: ComputerLevel) => {
+  const startGame = useCallback((selectedMode: GameMode, selectedVsSubmode?: VsSubmode, selectedComputerLevel?: ComputerLevel, selectedTurnSeconds?: number) => {
+    turnSecondsRef.current = selectedTurnSeconds ?? TURN_SECONDS;
     const dict = dictionaryRef.current;
     const startWord = pickStartingWord(dict);
     const initialChain: ChainEntry[] = [{ word: startWord, playedBy: 'start', score: 0, connectionType: '', speedMultiplier: 1 }];
@@ -242,8 +244,9 @@ export function useGameState() {
     }
 
     // Computer always "answers" within the grace period — give it a mid-range time
-    const computerTimeRemaining = TURN_SECONDS - 2;
-    const result = evaluateMove(afterWord, move, afterUsed, computerTimeRemaining, TURN_SECONDS);
+    const ts = turnSecondsRef.current;
+    const computerTimeRemaining = ts - 2;
+    const result = evaluateMove(afterWord, move, afterUsed, computerTimeRemaining, ts);
     const entry: ChainEntry = {
       word: move, playedBy: 1,
       score: result.totalScore, connectionType: result.connectionType, speedMultiplier: result.speedMultiplier,
@@ -279,7 +282,7 @@ export function useGameState() {
     const prevChain = chainRef.current;
     const prevWord = prevChain[prevChain.length - 1].word;
     const used = usedSet(prevChain);
-    const result = evaluateMove(prevWord, entry, used, timeRemaining, TURN_SECONDS);
+    const result = evaluateMove(prevWord, entry, used, timeRemaining, turnSecondsRef.current);
 
     setLastMoveResult(result);
     if (!result.valid) {
@@ -353,7 +356,7 @@ export function useGameState() {
     scoresRef.current = [0, 0];
     setCurrentPlayer(0);
     currentPlayerRef.current = 0;
-    setTimeRemaining(TURN_SECONDS);
+    setTimeRemaining(turnSecondsRef.current);
     setGameOverReason(null);
     setLastMoveResult(null);
     setIsComputerThinking(false);
@@ -372,6 +375,7 @@ export function useGameState() {
     lives, playerTurnsLeft,
     firstToXTarget: FIRST_TO_X_TARGET,
     roundsTotal: ROUNDS_TOTAL,
+    turnSeconds: turnSecondsRef.current,
     submitWord, startGame, resetGame,
   };
 }
