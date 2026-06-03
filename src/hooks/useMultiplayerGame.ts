@@ -117,6 +117,10 @@ export function useMultiplayerGame(roomId: string, playerName: string) {
     ws?.send(JSON.stringify({ type: 'start', turnSeconds }));
   }, [ws]);
 
+  const rematch = useCallback(() => {
+    ws?.send(JSON.stringify({ type: 'rematch' }));
+  }, [ws]);
+
   // Identify ourselves by clientId (stable across reconnects), not connection id
   const [myClientId] = useState(() => typeof window !== 'undefined' ? getOrCreateClientId() : '');
   const myPlayer = roomState?.players.find(p => p.clientId === myClientId);
@@ -124,5 +128,5 @@ export function useMultiplayerGame(roomId: string, playerName: string) {
   const isMyTurn = myIndex !== null && roomState?.currentPlayerIndex === myIndex;
   const isHost = myPlayer !== undefined && roomState?.hostId === myPlayer.id;
 
-  return { roomState, myId, myIndex, isMyTurn, isHost, serverError, submitWord, startGame };
+  return { roomState, myId, myIndex, isMyTurn, isHost, serverError, submitWord, startGame, rematch };
 }

@@ -64,6 +64,7 @@ type ServerMsg =
 type ClientMsg =
   | { type: 'join'; name: string; clientId: string }
   | { type: 'start'; turnSeconds: number }
+  | { type: 'rematch' }
   | { type: 'play'; word: string };
 
 // ── Game logic ───────────────────────────────────────────────────────────────
@@ -182,9 +183,22 @@ function lookupWord(simplified: string, dict: WordEntry[]): WordEntry | null {
   return dict.find(e => e.simplified === simplified) ?? null;
 }
 
+function dailySeed(): number {
+  const d = new Date();
+  return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+}
+
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed + 1) * 10000;
+  return x - Math.floor(x);
+}
+
 function pickStartingWord(dict: WordEntry[]): WordEntry {
-  const twoChar = dict.filter(e => e.wordLength === 2);
-  return twoChar[Math.floor(Math.random() * twoChar.length)];
+  // Prefer HSK 1-3 two-character words; same word each day via date seed
+  const pool = dict.filter(e => e.wordLength === 2 && e.hskLevel !== null && e.hskLevel <= 3);
+  const source = pool.length > 0 ? pool : dict.filter(e => e.wordLength === 2);
+  const idx = Math.floor(seededRandom(dailySeed()) * source.length);
+  return source[idx];
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -236,6 +250,7 @@ export default class GameRoom implements Party.Server {
 
     if (msg.type === 'join') await this.handleJoin(sender, msg.name, msg.clientId);
     else if (msg.type === 'start') await this.handleStart(sender, msg.turnSeconds);
+    else if (msg.type === 'rematch') await this.handleRematch(sender);
     else if (msg.type === 'play') await this.handlePlay(sender, msg.word);
   }
 
@@ -308,6 +323,28 @@ export default class GameRoom implements Party.Server {
     }
     const validSeconds = [30, 60].includes(turnSeconds) ? turnSeconds : TURN_SECONDS;
     await this.startGame(validSeconds);
+  }
+
+  private async handleRematch(conn: Party.Connection) {
+    if (this.state.status !== 'game-over') return;
+    if (this.state.hostId !== conn.id) {
+      conn.send(JSON.stringify({ type: 'error', message: 'Only the host can start a rematch' } satisfies ServerMsg));
+      return;
+    }
+    this.stopTimer();
+    this.usedWords = new Set();
+    this.state.status = 'waiting';
+    this.state.chain = [];
+    this.state.gameOverReason = null;
+    this.state.lastMoveError = null;
+    this.state.currentPlayerIndex = 0;
+    this.state.players.forEach(p => {
+      p.score = 0;
+      p.timeouts = 0;
+      p.eliminated = false;
+    });
+    this.broadcast();
+    await this.saveState();
   }
 
   private async handlePlay(conn: Party.Connection, simplified: string) {

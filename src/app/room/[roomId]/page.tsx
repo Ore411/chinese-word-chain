@@ -8,7 +8,7 @@ import MultiplayerBoard from '@/components/MultiplayerBoard';
 // Only mounts (and connects) after the player has entered their name
 function GameSession({ roomId, playerName }: { roomId: string; playerName: string }) {
   const router = useRouter();
-  const { roomState, myIndex, isMyTurn, isHost, serverError, submitWord, startGame } = useMultiplayerGame(roomId, playerName);
+  const { roomState, myIndex, isMyTurn, isHost, serverError, submitWord, startGame, rematch } = useMultiplayerGame(roomId, playerName);
 
   if (!roomState) {
     return (
@@ -31,6 +31,7 @@ function GameSession({ roomId, playerName }: { roomId: string; playerName: strin
       roomId={roomId}
       onSubmit={submitWord}
       onStart={startGame}
+      onRematch={rematch}
       onLeave={() => router.push('/')}
     />
   );

@@ -35,6 +35,24 @@ const CONNECTION_COLORS: Record<string, string> = {
 
 const MAX_TIMEOUTS = 3;
 
+const HSK_COLORS: Record<number, string> = {
+  1: 'bg-emerald-800 text-emerald-200',
+  2: 'bg-sky-800 text-sky-200',
+  3: 'bg-violet-800 text-violet-200',
+  4: 'bg-amber-800 text-amber-200',
+  5: 'bg-orange-800 text-orange-200',
+  6: 'bg-red-900 text-red-200',
+};
+
+function HskBadge({ level }: { level: number | null }) {
+  if (!level) return null;
+  return (
+    <span className={`text-xs px-1.5 py-0.5 rounded font-mono ${HSK_COLORS[level] ?? 'bg-slate-700 text-slate-400'}`}>
+      HSK{level}
+    </span>
+  );
+}
+
 function Strikes({ count }: { count: number }) {
   return (
     <div className="flex gap-0.5">
@@ -88,7 +106,10 @@ function ChainRow({ entry, players, isLast }: { entry: ChainEntry; players: Play
         )}
       </div>
       <div className="flex flex-col">
-        <span className="text-2xl font-bold text-white tracking-wider">{entry.word.simplified}</span>
+        <div className="flex items-baseline gap-2">
+          <span className="text-2xl font-bold text-white tracking-wider">{entry.word.simplified}</span>
+          <HskBadge level={entry.word.hskLevel} />
+        </div>
         <span className="text-slate-400 text-xs">{entry.word.pinyin}</span>
         <span className="text-slate-500 text-xs truncate max-w-xs">{entry.word.english}</span>
         {entry.connectionType && CONNECTION_LABELS[entry.connectionType] && (
@@ -111,11 +132,12 @@ interface Props {
   roomId: string;
   onSubmit: (word: string) => void;
   onStart: (turnSeconds: 30 | 60) => void;
+  onRematch: () => void;
   onLeave: () => void;
 }
 
 export default function MultiplayerBoard({
-  roomState, myIndex, isMyTurn, isHost, serverError, roomId, onSubmit, onStart, onLeave,
+  roomState, myIndex, isMyTurn, isHost, serverError, roomId, onSubmit, onStart, onRematch, onLeave,
 }: Props) {
   const [input, setInput] = useState('');
   const [selectedTime, setSelectedTime] = useState<30 | 60>(30);
@@ -248,9 +270,18 @@ export default function MultiplayerBoard({
         </div>
 
         <div className="text-slate-500 text-sm">Chain length: {chain.length} words</div>
-        <button onClick={onLeave} className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-semibold transition-colors">
-          Back to Menu
-        </button>
+        <div className="flex gap-3">
+          {isHost ? (
+            <button onClick={onRematch} className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-semibold transition-colors">
+              Play Again
+            </button>
+          ) : (
+            <div className="text-slate-400 text-sm px-6 py-3">Waiting for host to start again…</div>
+          )}
+          <button onClick={onLeave} className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-semibold transition-colors">
+            Leave
+          </button>
+        </div>
       </div>
     );
   }

@@ -64,7 +64,10 @@ function ChainEntryRow({ entry, mode, isLast }: { entry: ChainEntry; mode: GameM
         )}
       </div>
       <div className="flex flex-col">
-        <span className="text-2xl font-bold text-white tracking-wider">{entry.word.simplified}</span>
+        <div className="flex items-baseline gap-2">
+          <span className="text-2xl font-bold text-white tracking-wider">{entry.word.simplified}</span>
+          <HskBadge level={entry.word.hskLevel} />
+        </div>
         <span className="text-slate-400 text-xs">{entry.word.pinyin}</span>
         <span className="text-slate-500 text-xs truncate max-w-xs">{entry.word.english}</span>
         {entry.connectionType && (
@@ -75,6 +78,24 @@ function ChainEntryRow({ entry, mode, isLast }: { entry: ChainEntry; mode: GameM
         )}
       </div>
     </div>
+  );
+}
+
+const HSK_COLORS: Record<number, string> = {
+  1: 'bg-emerald-800 text-emerald-200',
+  2: 'bg-sky-800 text-sky-200',
+  3: 'bg-violet-800 text-violet-200',
+  4: 'bg-amber-800 text-amber-200',
+  5: 'bg-orange-800 text-orange-200',
+  6: 'bg-red-900 text-red-200',
+};
+
+function HskBadge({ level }: { level: number | null }) {
+  if (!level) return null;
+  return (
+    <span className={`text-xs px-1.5 py-0.5 rounded font-mono ${HSK_COLORS[level] ?? 'bg-slate-700 text-slate-400'}`}>
+      HSK{level}
+    </span>
   );
 }
 
