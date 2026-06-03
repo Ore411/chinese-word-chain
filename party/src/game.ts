@@ -186,22 +186,10 @@ function lookupWord(simplified: string, dict: WordEntry[]): WordEntry | null {
   return dict.find(e => e.simplified === simplified) ?? null;
 }
 
-function dailySeed(): number {
-  const d = new Date();
-  return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
-}
-
-function seededRandom(seed: number): number {
-  const x = Math.sin(seed + 1) * 10000;
-  return x - Math.floor(x);
-}
-
 function pickStartingWord(dict: WordEntry[]): WordEntry {
-  // Prefer HSK 1-3 two-character words; same word each day via date seed
-  const pool = dict.filter(e => e.wordLength === 2 && e.hskLevel !== null && e.hskLevel <= 3);
+  const pool = dict.filter(e => e.wordLength === 2 && e.hskLevel !== null && e.hskLevel <= 4);
   const source = pool.length > 0 ? pool : dict.filter(e => e.wordLength === 2);
-  const idx = Math.floor(seededRandom(dailySeed()) * source.length);
-  return source[idx];
+  return source[Math.floor(Math.random() * source.length)];
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────

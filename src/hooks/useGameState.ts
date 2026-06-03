@@ -26,21 +26,10 @@ const FIRST_TO_X_TARGET = 50;
 const ROUNDS_TOTAL = 10;
 const STARTING_LIVES = 3;
 
-function dailySeed(): number {
-  const d = new Date();
-  return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
-}
-
-function seededRandom(seed: number): number {
-  const x = Math.sin(seed + 1) * 10000;
-  return x - Math.floor(x);
-}
-
 function pickStartingWord(dictionary: WordEntry[]): WordEntry {
-  const pool = dictionary.filter(e => e.wordLength === 2 && e.hskLevel !== null && e.hskLevel <= 3);
+  const pool = dictionary.filter(e => e.wordLength === 2 && e.hskLevel !== null && e.hskLevel <= 4);
   const source = pool.length > 0 ? pool : dictionary.filter(e => e.wordLength === 2);
-  const idx = Math.floor(seededRandom(dailySeed()) * source.length);
-  return source[idx];
+  return source[Math.floor(Math.random() * source.length)];
 }
 
 function usedSet(chain: ChainEntry[]): Set<string> {
