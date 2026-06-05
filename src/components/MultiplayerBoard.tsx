@@ -534,6 +534,31 @@ export default function MultiplayerBoard({
                   </span>
                 ))}
               </div>
+
+              {/* Length bonus chips */}
+              <div className="w-full flex items-center gap-1.5 flex-wrap mt-0.5">
+                <span className="text-slate-500 text-xs">Length bonus:</span>
+                {[
+                  { chars: 3, bonus: 2,  label: '3字' },
+                  { chars: 4, bonus: 4,  label: '4字' },
+                  { chars: 5, bonus: 6,  label: '5字+' },
+                ].map(({ chars, bonus, label }) => {
+                  const inputLen = [...input].length;
+                  const isActive = isMyTurn && inputLen > 0 && (chars === 5 ? inputLen >= 5 : inputLen === chars);
+                  return (
+                    <span
+                      key={chars}
+                      className={`px-2 py-0.5 rounded text-xs font-mono font-semibold transition-colors ${
+                        isActive
+                          ? 'bg-violet-600 text-white ring-1 ring-violet-400'
+                          : 'bg-slate-700 text-slate-400'
+                      }`}
+                    >
+                      {label} <span className={isActive ? 'text-violet-200' : 'text-slate-500'}>+{bonus}</span>
+                    </span>
+                  );
+                })}
+              </div>
             </div>
           </div>
         );
