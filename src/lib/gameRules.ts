@@ -14,6 +14,9 @@ export interface WordEntry {
   hskLevel: number | null;
 }
 
+/** Learner = all connections allowed. Advanced = exact character only. */
+export type ChainMode = 'learner' | 'advanced';
+
 export type ConnectionType =
   | 'exactChar'
   | 'exactInitialExactFinal'
@@ -87,6 +90,7 @@ export function evaluateMove(
   usedWords: Set<string>,
   timeRemaining = 30,
   turnSeconds = 30,
+  chainMode: ChainMode = 'learner',
 ): MoveResult {
   const invalid = (connectionType: ConnectionType = 'invalid'): MoveResult =>
     ({ valid: false, connectionType, baseScore: 0, lengthBonus: 0, chengyuBonus: 0, speedMultiplier: 1, totalScore: 0 });
@@ -95,6 +99,9 @@ export function evaluateMove(
 
   const connectionType = classifyConnection(prev, next);
   if (connectionType === 'invalid') return invalid();
+
+  // Advanced mode: only exact character matches are allowed
+  if (chainMode === 'advanced' && connectionType !== 'exactChar') return invalid('exactChar');
 
   const base = BASE_SCORES[connectionType];
   const lb = lengthBonus(next.wordLength);

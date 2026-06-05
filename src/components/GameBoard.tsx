@@ -104,8 +104,8 @@ function HskBadge({ level }: { level: number | null }) {
   );
 }
 
-function SpeedBadge({ timeRemaining }: { timeRemaining: number }) {
-  const mult = calcSpeedMultiplier(timeRemaining, 30);
+function SpeedBadge({ timeRemaining, turnSeconds }: { timeRemaining: number; turnSeconds: number }) {
+  const mult = calcSpeedMultiplier(timeRemaining, turnSeconds);
   const color = mult >= 1.8 ? 'text-emerald-300 bg-emerald-900/60' :
                 mult >= 1.0 ? 'text-amber-300 bg-amber-900/60' : 'text-red-400 bg-red-900/40';
   return (
@@ -115,9 +115,10 @@ function SpeedBadge({ timeRemaining }: { timeRemaining: number }) {
   );
 }
 
-function TimerBar({ timeRemaining }: { timeRemaining: number }) {
-  const pct = (timeRemaining / 30) * 100;
-  const color = timeRemaining > 15 ? 'bg-emerald-500' : timeRemaining > 8 ? 'bg-amber-400' : 'bg-red-500';
+function TimerBar({ timeRemaining, turnSeconds }: { timeRemaining: number; turnSeconds: number }) {
+  const pct = (timeRemaining / turnSeconds) * 100;
+  const half = turnSeconds / 2;
+  const color = timeRemaining > half ? 'bg-emerald-500' : timeRemaining > turnSeconds * 0.27 ? 'bg-amber-400' : 'bg-red-500';
   return (
     <div className="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
       <div className={`h-full rounded-full transition-all duration-1000 ease-linear ${color}`} style={{ width: `${pct}%` }} />
@@ -152,6 +153,7 @@ interface GameBoardProps {
   playerTurnsLeft: number;
   firstToXTarget: number;
   roundsTotal: number;
+  turnSeconds: number;
   onSubmit: (word: string) => void;
   onReset: () => void;
 }
@@ -160,6 +162,7 @@ export default function GameBoard({
   chain, scores, currentPlayer, timeRemaining,
   isComputerThinking, gameOverReason, lastMoveResult,
   mode, vsSubmode, computerLevel, chainMode = 'learner', status, lives, playerTurnsLeft, firstToXTarget, roundsTotal,
+  turnSeconds,
   onSubmit, onReset,
 }: GameBoardProps) {
   const [input, setInput] = useState('');
@@ -375,12 +378,15 @@ export default function GameBoard({
 
         {/* Timer */}
         <div className="flex items-center gap-2">
-          <TimerBar timeRemaining={timeRemaining} />
-          <span className={`text-sm font-mono w-6 text-right ${timeRemaining <= 8 ? 'text-red-400' : 'text-slate-400'}`}>
+          <TimerBar timeRemaining={timeRemaining} turnSeconds={turnSeconds} />
+          <span className={`text-sm font-mono w-6 text-right ${mode !== 'solo' && timeRemaining <= (turnSeconds * 0.27) ? 'text-red-400' : 'text-slate-400'}`}>
             {timeRemaining}
           </span>
-          <SpeedBadge timeRemaining={timeRemaining} />
+          <SpeedBadge timeRemaining={timeRemaining} turnSeconds={turnSeconds} />
         </div>
+        {mode === 'solo' && (
+          <div className="text-xs text-slate-600 mt-1 text-center">Timer resets automatically — take your time</div>
+        )}
       </div>
 
       {/* Chain history */}

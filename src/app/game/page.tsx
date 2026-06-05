@@ -14,7 +14,7 @@ function GameContent() {
   const levelParam = searchParams.get('level');
   const computerLevel = (levelParam ? parseInt(levelParam) : null) as ComputerLevel;
   const timeParam = searchParams.get('time');
-  const turnSeconds = timeParam && [15, 30, 60].includes(parseInt(timeParam)) ? parseInt(timeParam) : undefined;
+  const initialTurnSeconds = timeParam && [15, 30, 60].includes(parseInt(timeParam)) ? parseInt(timeParam) : undefined;
   const chainModeParam = searchParams.get('chainMode');
   const chainMode: ChainMode = chainModeParam === 'advanced' ? 'advanced' : 'learner';
 
@@ -22,15 +22,15 @@ function GameContent() {
     dictionaryLoading, status, mode: activeMode, vsSubmode, computerLevel: activeComputerLevel,
     chainMode: activeChainMode,
     chain, scores, currentPlayer, timeRemaining, isComputerThinking, gameOverReason,
-    lastMoveResult, lives, playerTurnsLeft, firstToXTarget, roundsTotal,
+    lastMoveResult, lives, playerTurnsLeft, firstToXTarget, roundsTotal, turnSeconds,
     submitWord, startGame, resetGame,
   } = useGameState();
 
   useEffect(() => {
     if (status === 'ready') {
-      startGame(mode, submode, computerLevel, turnSeconds, chainMode);
+      startGame(mode, submode, computerLevel, initialTurnSeconds, chainMode);
     }
-  }, [status, mode, submode, computerLevel, turnSeconds, chainMode, startGame]);
+  }, [status, mode, submode, computerLevel, initialTurnSeconds, chainMode, startGame]);
 
   if (dictionaryLoading || status === 'loading' || status === 'ready') {
     return (
@@ -70,6 +70,7 @@ function GameContent() {
           vsSubmode={vsSubmode}
           computerLevel={activeComputerLevel}
           chainMode={activeChainMode}
+          turnSeconds={turnSeconds}
           status={status}
           lives={lives}
           playerTurnsLeft={playerTurnsLeft}

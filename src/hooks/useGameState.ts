@@ -152,6 +152,9 @@ export function useGameState() {
         } else {
           newChainSegment();
         }
+      } else if (currentMode === 'solo') {
+        // In practice mode, time running out just restarts the timer — no game over
+        startTimer();
       } else {
         setStatus('game-over');
         setGameOverReason('timeout');

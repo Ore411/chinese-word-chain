@@ -342,10 +342,10 @@ function SoloMode() {
       <span className="text-3xl">🧘</span>
       <div className="flex-1">
         <div className="flex items-baseline gap-2">
-          <span className="font-semibold text-lg">Solo Practice</span>
+          <span className="font-semibold text-lg">Practice</span>
           <span className="text-slate-500 text-sm">单人练习</span>
         </div>
-        <p className="text-slate-400 text-sm mt-0.5">Build the longest chain you can. No opponent, no pressure.</p>
+        <p className="text-slate-400 text-sm mt-0.5">Build the longest chain you can. The timer shows your score multiplier — no pressure, no time limit.</p>
       </div>
       <span className="text-slate-600 group-hover:text-emerald-400 transition-colors text-xl">→</span>
     </Link>
