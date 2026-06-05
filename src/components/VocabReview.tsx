@@ -161,7 +161,7 @@ export default function VocabReview({ chain }: Props) {
               {entry.score > 0 && (
                 <div className="flex flex-col items-end shrink-0">
                   <span className="text-emerald-400 font-bold text-sm">+{entry.score}</span>
-                  {entry.speedMultiplier && entry.speedMultiplier !== 1 && (
+                  {entry.speedMultiplier !== undefined && entry.score > 0 && (
                     <span className="text-slate-500 text-xs">{entry.speedMultiplier.toFixed(1)}×</span>
                   )}
                 </div>

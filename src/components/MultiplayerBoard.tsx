@@ -112,9 +112,9 @@ function ChainRow({ entry, players, isLast }: { entry: ChainEntry; players: Play
         {entry.score > 0 && (
           <span className="text-slate-400 text-xs">
             +{entry.score}
-            {entry.speedMultiplier > 1 && (
-              <span className="text-emerald-500 ml-0.5">{entry.speedMultiplier.toFixed(1)}×</span>
-            )}
+            <span className={`ml-0.5 ${entry.speedMultiplier >= 1.8 ? 'text-emerald-400' : entry.speedMultiplier >= 1.0 ? 'text-amber-400' : 'text-red-400'}`}>
+              {entry.speedMultiplier.toFixed(1)}×
+            </span>
           </span>
         )}
       </div>
