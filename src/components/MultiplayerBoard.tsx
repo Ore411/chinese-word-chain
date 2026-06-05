@@ -38,8 +38,6 @@ const CONNECTION_COLORS: Record<string, string> = {
   familyInitialStrongFinal: 'text-violet-300', weakMusicalFinal: 'text-amber-400',
 };
 
-import { BASE_SCORES } from '@/lib/gameRules';
-
 const MAX_TIMEOUTS = 3;
 
 const HSK_COLORS: Record<number, string> = {
@@ -102,41 +100,23 @@ function wordLengthBonus(n: number): number {
   return 0;
 }
 
-function MpScoreBreakdown({ entry }: { entry: ChainEntry }) {
-  if (!entry.score || entry.playedBy === 'start') return null;
-  const base = BASE_SCORES[entry.connectionType as keyof typeof BASE_SCORES] ?? 0;
-  const lb = wordLengthBonus(entry.word.wordLength);
-  const cb = entry.word.isChengyu ? 5 : 0;
-  const mult = entry.speedMultiplier ?? 1;
-  const multColor = mult >= 1.8 ? 'text-emerald-400' : mult >= 1.0 ? 'text-amber-400' : 'text-red-400';
-  return (
-    <div className="flex items-center gap-1 flex-wrap mt-1">
-      <span className="text-slate-500 text-xs">+{base}</span>
-      {lb > 0 && (
-        <span className="text-xs px-1 py-0.5 rounded bg-violet-900/60 text-violet-300 font-semibold">
-          +{lb} {entry.word.wordLength}字
-        </span>
-      )}
-      {cb > 0 && (
-        <span className="text-xs px-1 py-0.5 rounded bg-amber-900/60 text-amber-300 font-semibold">
-          +{cb} 成语
-        </span>
-      )}
-      <span className={`text-xs font-bold ${multColor}`}>×{mult.toFixed(1)}</span>
-      <span className="text-slate-600 text-xs">=</span>
-      <span className="text-white text-xs font-bold">+{entry.score}</span>
-    </div>
-  );
-}
-
 function ChainRow({ entry, players, isLast }: { entry: ChainEntry; players: PlayerInfo[]; isLast: boolean }) {
   const player = players.find(p => p.index === entry.playerIndex);
+  const lb = wordLengthBonus(entry.word.wordLength);
+  const mult = entry.speedMultiplier ?? 1;
+  const multColor = mult >= 1.8 ? 'text-emerald-400' : mult >= 1.0 ? 'text-amber-400' : 'text-red-400';
   return (
     <div className={`flex items-start gap-3 py-3 ${isLast ? 'opacity-100' : 'opacity-60'}`}>
       <div className="flex flex-col items-end min-w-[2.5rem]">
         {entry.playedBy === 'start'
           ? <span className="text-slate-500 text-xs">Start</span>
           : <span className={`text-xs font-medium ${playerColor(entry.playerIndex)}`}>{player?.name ?? '?'}</span>}
+        {entry.score > 0 && (
+          <span className="text-slate-400 text-xs">
+            +{entry.score}
+            <span className={`ml-0.5 ${multColor}`}>{mult.toFixed(1)}×</span>
+          </span>
+        )}
       </div>
       <div className="flex flex-col flex-1">
         <div className="flex items-baseline gap-2">
@@ -148,9 +128,10 @@ function ChainRow({ entry, players, isLast }: { entry: ChainEntry; players: Play
         {entry.connectionType && CONNECTION_LABELS[entry.connectionType] && (
           <span className={`text-xs mt-0.5 ${CONNECTION_COLORS[entry.connectionType] ?? ''}`}>
             {CONNECTION_LABELS[entry.connectionType]}
+            {lb > 0 && ` · ${entry.word.wordLength}字 +${lb}`}
+            {entry.word.isChengyu && ' · Chengyu +5'}
           </span>
         )}
-        <MpScoreBreakdown entry={entry} />
       </div>
     </div>
   );

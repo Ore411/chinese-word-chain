@@ -1,7 +1,6 @@
 'use client';
 
 import { toToneMarks } from '@/lib/pinyin';
-import { BASE_SCORES } from '@/lib/gameRules';
 
 interface WordEntry {
   simplified: string;
@@ -143,36 +142,13 @@ export default function VocabReview({ chain }: Props) {
                 {entry.connectionType && CONNECTION_LABELS[entry.connectionType] && (
                   <span className={`text-xs mt-1 ${CONNECTION_COLORS[entry.connectionType]}`}>
                     {CONNECTION_LABELS[entry.connectionType]}
+                    {wordLengthBonus(entry.word.wordLength) > 0 && ` · ${entry.word.wordLength}字 +${wordLengthBonus(entry.word.wordLength)}`}
+                    {entry.word.isChengyu && ' · 成语 +5'}
                   </span>
                 )}
                 {isStart && (
                   <span className="text-xs text-slate-600 mt-0.5">Starting word</span>
                 )}
-                {entry.score > 0 && (() => {
-                  const base = BASE_SCORES[entry.connectionType as keyof typeof BASE_SCORES] ?? 0;
-                  const lb = wordLengthBonus(entry.word.wordLength);
-                  const cb = entry.word.isChengyu ? 5 : 0;
-                  const mult = entry.speedMultiplier ?? 1;
-                  const multColor = mult >= 1.8 ? 'text-emerald-400' : mult >= 1.0 ? 'text-amber-400' : 'text-red-400';
-                  return (
-                    <div className="flex items-center gap-1 flex-wrap mt-1">
-                      <span className="text-slate-500 text-xs">+{base}</span>
-                      {lb > 0 && (
-                        <span className="text-xs px-1 py-0.5 rounded bg-violet-900/60 text-violet-300 font-semibold">
-                          +{lb} {entry.word.wordLength}字
-                        </span>
-                      )}
-                      {cb > 0 && (
-                        <span className="text-xs px-1 py-0.5 rounded bg-amber-900/60 text-amber-300 font-semibold">
-                          +{cb} 成语
-                        </span>
-                      )}
-                      <span className={`text-xs font-bold ${multColor}`}>×{mult.toFixed(1)}</span>
-                      <span className="text-slate-600 text-xs">=</span>
-                      <span className="text-white text-xs font-bold">+{entry.score}</span>
-                    </div>
-                  );
-                })()}
               </div>
             </div>
           );

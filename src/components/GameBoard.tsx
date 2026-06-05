@@ -8,7 +8,7 @@ function shortMeaning(english: string, n = 2) {
 }
 import type { ChainEntry, GameMode, GameOverReason, VsSubmode, ComputerLevel, ChainMode } from '@/hooks/useGameState';
 import type { MoveResult, ConnectionType } from '@/lib/gameRules';
-import { calcSpeedMultiplier, BASE_SCORES } from '@/lib/gameRules';
+import { calcSpeedMultiplier } from '@/lib/gameRules';
 import { getInitialFamilyDisplay, getCompatibleFinals } from '@/lib/pinyin';
 
 const CONNECTION_LABELS: Record<ConnectionType, string> = {
@@ -59,39 +59,20 @@ function wordLengthBonus(n: number): number {
   return 0;
 }
 
-function ScoreBreakdown({ entry }: { entry: ChainEntry }) {
-  if (!entry.score || entry.playedBy === 'start') return null;
-  const ct = entry.connectionType as ConnectionType;
-  const base = BASE_SCORES[ct] ?? 0;
+function ChainEntryRow({ entry, mode, isLast }: { entry: ChainEntry; mode: GameMode; isLast: boolean }) {
   const lb = wordLengthBonus(entry.word.wordLength);
-  const cb = entry.word.isChengyu ? 5 : 0;
   const mult = entry.speedMultiplier ?? 1;
   const multColor = mult >= 1.8 ? 'text-emerald-400' : mult >= 1.0 ? 'text-amber-400' : 'text-red-400';
-  return (
-    <div className="flex items-center gap-1 flex-wrap mt-1">
-      <span className="text-slate-500 text-xs">+{base}</span>
-      {lb > 0 && (
-        <span className="text-xs px-1 py-0.5 rounded bg-violet-900/60 text-violet-300 font-semibold">
-          +{lb} {entry.word.wordLength}字
-        </span>
-      )}
-      {cb > 0 && (
-        <span className="text-xs px-1 py-0.5 rounded bg-amber-900/60 text-amber-300 font-semibold">
-          +{cb} 成语
-        </span>
-      )}
-      <span className={`text-xs font-bold ${multColor}`}>×{mult.toFixed(1)}</span>
-      <span className="text-slate-600 text-xs">=</span>
-      <span className="text-white text-xs font-bold">+{entry.score}</span>
-    </div>
-  );
-}
-
-function ChainEntryRow({ entry, mode, isLast }: { entry: ChainEntry; mode: GameMode; isLast: boolean }) {
   return (
     <div className={`flex items-start gap-3 py-3 ${isLast ? 'opacity-100' : 'opacity-60'}`}>
       <div className="flex flex-col items-end min-w-[2.5rem]">
         <PlayerLabel playedBy={entry.playedBy} mode={mode} />
+        {entry.score > 0 && (
+          <span className="text-slate-400 text-xs">
+            +{entry.score}
+            <span className={`ml-0.5 ${multColor}`}>{mult.toFixed(1)}×</span>
+          </span>
+        )}
       </div>
       <div className="flex flex-col flex-1">
         <div className="flex items-baseline gap-2">
@@ -103,9 +84,10 @@ function ChainEntryRow({ entry, mode, isLast }: { entry: ChainEntry; mode: GameM
         {entry.connectionType && (
           <span className={`text-xs mt-0.5 ${CONNECTION_COLORS[entry.connectionType as ConnectionType]}`}>
             {CONNECTION_LABELS[entry.connectionType as ConnectionType]}
+            {lb > 0 && ` · ${entry.word.wordLength}字 +${lb}`}
+            {entry.word.isChengyu && ' · Chengyu +5'}
           </span>
         )}
-        <ScoreBreakdown entry={entry} />
       </div>
     </div>
   );
