@@ -1,10 +1,11 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import type { GameMode, VsSubmode, ComputerLevel, ChainMode } from '@/hooks/useGameState';
 import GameBoard from '@/components/GameBoard';
+import ConfirmModal from '@/components/ConfirmModal';
 
 function GameContent() {
   const searchParams = useSearchParams();
@@ -18,12 +19,14 @@ function GameContent() {
   const chainModeParam = searchParams.get('chainMode');
   const chainMode: ChainMode = chainModeParam === 'advanced' ? 'advanced' : 'learner';
 
+  const [modal, setModal] = useState<'quit' | 'review' | null>(null);
+
   const {
     dictionaryLoading, status, mode: activeMode, vsSubmode, computerLevel: activeComputerLevel,
     chainMode: activeChainMode,
     chain, scores, currentPlayer, timeRemaining, isComputerThinking, gameOverReason,
     lastMoveResult, lives, playerTurnsLeft, firstToXTarget, roundsTotal, turnSeconds,
-    submitWord, startGame, resetGame,
+    submitWord, startGame, resetGame, finishGame,
   } = useGameState();
 
   useEffect(() => {
@@ -44,17 +47,40 @@ function GameContent() {
     );
   }
 
+  const isSolo = mode === 'solo';
+  const isPlaying = status === 'playing';
+
+  function handleMenuClick() {
+    if (status === 'game-over') {
+      router.push('/');
+    } else {
+      setModal('quit');
+    }
+  }
+
   return (
     <div className="flex flex-col h-screen bg-slate-900">
       <header className="flex-none flex items-center justify-between px-4 py-3 border-b border-slate-700">
         <button
-          onClick={() => router.push('/')}
-          className="text-slate-400 hover:text-white text-sm transition-colors"
+          onClick={handleMenuClick}
+          className="text-slate-400 hover:text-white text-sm transition-colors w-32 text-left"
         >
           ← Menu
         </button>
+
         <span className="text-white font-semibold tracking-wide">词语接龙</span>
-        <div className="w-16" />
+
+        {/* Right slot: Stop & Review button for practice mode */}
+        <div className="w-32 flex justify-end">
+          {isSolo && isPlaying && (
+            <button
+              onClick={() => setModal('review')}
+              className="text-xs bg-slate-700 hover:bg-amber-600 text-slate-300 hover:text-white px-3 py-1.5 rounded-lg transition-colors font-medium"
+            >
+              Stop & Review
+            </button>
+          )}
+        </div>
       </header>
 
       <div className="flex-1 overflow-hidden">
@@ -66,7 +92,7 @@ function GameContent() {
           isComputerThinking={isComputerThinking}
           gameOverReason={gameOverReason}
           lastMoveResult={lastMoveResult}
-          mode={activeMode}
+          mode={mode}
           vsSubmode={vsSubmode}
           computerLevel={activeComputerLevel}
           chainMode={activeChainMode}
@@ -78,8 +104,30 @@ function GameContent() {
           roundsTotal={roundsTotal}
           onSubmit={submitWord}
           onReset={resetGame}
+          onFinish={() => setModal('review')}
         />
       </div>
+
+      {/* Quit game modal (all modes) */}
+      <ConfirmModal
+        open={modal === 'quit'}
+        title="Quit game?"
+        message="Are you sure you want to quit the game? Your current progress will be lost."
+        confirmLabel="Quit game"
+        onConfirm={() => router.push('/')}
+        onCancel={() => setModal(null)}
+      />
+
+      {/* Stop practice & review modal (solo only) */}
+      <ConfirmModal
+        open={modal === 'review'}
+        title="Stop practice?"
+        message="Are you sure you want to stop and review the vocabulary?"
+        confirmLabel="Review vocabulary"
+        confirmClassName="w-full py-3 rounded-xl font-semibold text-white transition-colors bg-amber-600 hover:bg-amber-500"
+        onConfirm={() => { setModal(null); finishGame(); }}
+        onCancel={() => setModal(null)}
+      />
     </div>
   );
 }

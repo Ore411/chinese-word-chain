@@ -346,6 +346,12 @@ export function useGameState() {
     }
   }, [status, isComputerThinking, stopTimer, startTimer, doComputerMove]);
 
+  const finishGame = useCallback(() => {
+    stopTimer();
+    setGameOverReason(null);
+    setStatus('game-over');
+  }, [stopTimer]);
+
   const resetGame = useCallback(() => {
     stopTimer();
     const empty: ChainEntry[] = [];
@@ -375,6 +381,6 @@ export function useGameState() {
     firstToXTarget: FIRST_TO_X_TARGET,
     roundsTotal: ROUNDS_TOTAL,
     turnSeconds: turnSecondsRef.current,
-    submitWord, startGame, resetGame,
+    submitWord, startGame, resetGame, finishGame,
   };
 }

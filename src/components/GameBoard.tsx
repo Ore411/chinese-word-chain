@@ -167,6 +167,7 @@ interface GameBoardProps {
   turnSeconds: number;
   onSubmit: (word: string) => void;
   onReset: () => void;
+  onFinish?: () => void;
 }
 
 export default function GameBoard({
@@ -174,7 +175,7 @@ export default function GameBoard({
   isComputerThinking, gameOverReason, lastMoveResult,
   mode, vsSubmode, computerLevel, chainMode = 'learner', status, lives, playerTurnsLeft, firstToXTarget, roundsTotal,
   turnSeconds,
-  onSubmit, onReset,
+  onSubmit, onReset, onFinish,
 }: GameBoardProps) {
   const [input, setInput] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -238,6 +239,7 @@ export default function GameBoard({
       if (gameOverReason === 'rounds-complete') return '🎯 Rounds complete!';
       if (gameOverReason === 'no-valid-moves') return 'No valid moves!';
       if (vsSubmode === 'lives') return '💔 Out of lives!';
+      if (mode === 'solo' && gameOverReason === null) return '📖 Practice session complete!';
       return 'Time ran out!';
     };
 
@@ -250,7 +252,7 @@ export default function GameBoard({
     return (
       <div className="h-full overflow-y-auto">
       <div className="flex flex-col items-center gap-6 text-center px-4 py-8">
-        <h2 className="text-4xl font-bold text-white">Game Over</h2>
+        <h2 className="text-4xl font-bold text-white">{mode === 'solo' && gameOverReason === null ? 'Practice Done' : 'Game Over'}</h2>
         <div className="flex items-center gap-3">
           {vsSubmode && (
             <div className="text-xs text-slate-500 uppercase tracking-wider">{SUBMODE_LABELS[vsSubmode]}</div>
@@ -513,6 +515,14 @@ export default function GameBoard({
         )}
         {imeHint && (
           <div className="text-slate-600 text-xs mt-1.5">{imeHint}</div>
+        )}
+        {mode === 'solo' && onFinish && (
+          <button
+            onClick={onFinish}
+            className="w-full mt-3 py-2.5 rounded-xl border border-slate-600 text-slate-400 hover:border-amber-500 hover:text-amber-400 text-sm font-medium transition-colors"
+          >
+            Stop & Review Vocabulary
+          </button>
         )}
       </div>
     </div>

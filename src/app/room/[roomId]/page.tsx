@@ -4,11 +4,13 @@ import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMultiplayerGame } from '@/hooks/useMultiplayerGame';
 import MultiplayerBoard from '@/components/MultiplayerBoard';
+import ConfirmModal from '@/components/ConfirmModal';
 
 // Only mounts (and connects) after the player has entered their name
 function GameSession({ roomId, playerName }: { roomId: string; playerName: string }) {
   const router = useRouter();
   const { roomState, myIndex, isMyTurn, isHost, serverError, submitWord, startGame, rematch } = useMultiplayerGame(roomId, playerName);
+  const [confirmLeave, setConfirmLeave] = useState(false);
 
   if (!roomState) {
     return (
@@ -21,19 +23,31 @@ function GameSession({ roomId, playerName }: { roomId: string; playerName: strin
     );
   }
 
+  const isPlaying = roomState.status === 'playing';
+
   return (
-    <MultiplayerBoard
-      roomState={roomState}
-      myIndex={myIndex}
-      isMyTurn={isMyTurn}
-      isHost={isHost}
-      serverError={serverError}
-      roomId={roomId}
-      onSubmit={submitWord}
-      onStart={startGame}
-      onRematch={rematch}
-      onLeave={() => router.push('/')}
-    />
+    <>
+      <MultiplayerBoard
+        roomState={roomState}
+        myIndex={myIndex}
+        isMyTurn={isMyTurn}
+        isHost={isHost}
+        serverError={serverError}
+        roomId={roomId}
+        onSubmit={submitWord}
+        onStart={startGame}
+        onRematch={rematch}
+        onLeave={() => isPlaying ? setConfirmLeave(true) : router.push('/')}
+      />
+      <ConfirmModal
+        open={confirmLeave}
+        title="Quit game?"
+        message="Are you sure you want to quit the game? Your current progress will be lost."
+        confirmLabel="Quit game"
+        onConfirm={() => router.push('/')}
+        onCancel={() => setConfirmLeave(false)}
+      />
+    </>
   );
 }
 
@@ -93,6 +107,7 @@ export default function RoomPage({ params }: { params: Promise<{ roomId: string 
   return (
     <div className="flex flex-col h-screen bg-slate-900">
       <header className="flex-none flex items-center justify-between px-4 py-3 border-b border-slate-700">
+        {/* Menu link — GameSession handles the confirm modal when playing */}
         <a href="/" className="text-slate-400 hover:text-white text-sm transition-colors">← Menu</a>
         <span className="text-white font-semibold tracking-wide">词语接龙</span>
         <span className="text-slate-500 text-xs font-mono">{roomId.toUpperCase()}</span>
