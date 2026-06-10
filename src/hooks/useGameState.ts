@@ -6,6 +6,7 @@ import type { WordEntry, MoveResult, ConnectionType, ChainMode } from '@/lib/gam
 import { evaluateMove } from '@/lib/gameRules';
 export type { ChainMode };
 import { pickComputerMove } from '@/lib/computerPlayer';
+import { playSound } from '@/lib/sound';
 
 export type GameMode = 'vs-computer' | 'solo' | 'pass-and-play';
 export type VsSubmode = 'first-to-x' | 'fixed-rounds' | 'lives';
@@ -273,6 +274,7 @@ export function useGameState() {
 
     const entry = lookupWord(simplified);
     if (!entry) {
+      playSound('wrong');
       setLastMoveResult({ valid: false, connectionType: 'invalid', baseScore: 0, lengthBonus: 0, chengyuBonus: 0, speedMultiplier: 1, totalScore: 0 });
       if (isLivesMode) { stopTimer(); handleTimeoutRef.current(); }
       return;
@@ -285,10 +287,12 @@ export function useGameState() {
 
     setLastMoveResult(result);
     if (!result.valid) {
+      playSound('wrong');
       if (isLivesMode) { stopTimer(); handleTimeoutRef.current(); }
       return;
     }
 
+    playSound('correct');
     stopTimer();
 
     const player = currentPlayerRef.current;

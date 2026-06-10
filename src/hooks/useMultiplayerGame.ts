@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import usePartySocket from 'partysocket/react';
+import { playSound } from '@/lib/sound';
 
 export interface Syllable {
   initial: string;
@@ -82,6 +83,13 @@ export function useMultiplayerGame(roomId: string, playerName: string) {
   const [serverError, setServerError] = useState<string | null>(null);
   const [joined, setJoined] = useState(false);
 
+  // Sound effects: track chain growth so we only chime on our own accepted move.
+  const prevChainLenRef = useRef(0);
+  const myClientIdRef = useRef('');
+  useEffect(() => {
+    if (typeof window !== 'undefined') myClientIdRef.current = getOrCreateClientId();
+  }, []);
+
   const ws = usePartySocket({
     host: PARTYKIT_HOST,
     room: roomId,
@@ -96,9 +104,19 @@ export function useMultiplayerGame(roomId: string, playerName: string) {
     onMessage(e: MessageEvent) {
       const msg = JSON.parse(e.data as string) as ServerMsg;
       if (msg.type === 'state') {
+        const chain = msg.state.chain;
+        // Chime when a new word was added and it was our own move.
+        if (chain.length > prevChainLenRef.current) {
+          const last = chain[chain.length - 1];
+          const me = msg.state.players.find(p => p.clientId === myClientIdRef.current);
+          if (me && last.playerIndex === me.index) playSound('correct');
+        }
+        prevChainLenRef.current = chain.length;
         setRoomState(msg.state);
         setServerError(null);
       } else if (msg.type === 'error') {
+        // Server rejected our move (invalid word / connection / not your turn).
+        playSound('wrong');
         setServerError(msg.message);
       }
     },
