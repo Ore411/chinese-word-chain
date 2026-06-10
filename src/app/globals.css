@@ -24,3 +24,26 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ── Move feedback animations ──────────────────────────────────────────── */
+@keyframes fb-pop {
+  0%   { transform: scale(0.92); opacity: 0; }
+  55%  { transform: scale(1.03); opacity: 1; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+
+@keyframes fb-shake {
+  0%, 100% { transform: translateX(0); }
+  15%      { transform: translateX(-6px); }
+  30%      { transform: translateX(5px); }
+  45%      { transform: translateX(-4px); }
+  60%      { transform: translateX(3px); }
+  75%      { transform: translateX(-2px); }
+}
+
+.animate-fb-pop   { animation: fb-pop 0.28s ease-out both; }
+.animate-fb-shake { animation: fb-shake 0.4s ease-in-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fb-pop, .animate-fb-shake { animation: none; }
+}

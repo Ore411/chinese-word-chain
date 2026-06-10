@@ -26,6 +26,8 @@ export type ConnectionType =
   | 'weakMusicalFinal'
   | 'invalid';
 
+export type InvalidReason = 'not-found' | 'already-used' | 'no-connection' | 'advanced-only';
+
 export interface MoveResult {
   valid: boolean;
   connectionType: ConnectionType;
@@ -34,6 +36,7 @@ export interface MoveResult {
   chengyuBonus: number;
   speedMultiplier: number;
   totalScore: number;
+  reason?: InvalidReason;
 }
 
 export function calcSpeedMultiplier(timeRemaining: number, turnSeconds: number): number {
@@ -92,16 +95,16 @@ export function evaluateMove(
   turnSeconds = 30,
   chainMode: ChainMode = 'learner',
 ): MoveResult {
-  const invalid = (connectionType: ConnectionType = 'invalid'): MoveResult =>
-    ({ valid: false, connectionType, baseScore: 0, lengthBonus: 0, chengyuBonus: 0, speedMultiplier: 1, totalScore: 0 });
+  const invalid = (connectionType: ConnectionType = 'invalid', reason?: InvalidReason): MoveResult =>
+    ({ valid: false, connectionType, baseScore: 0, lengthBonus: 0, chengyuBonus: 0, speedMultiplier: 1, totalScore: 0, reason });
 
-  if (usedWords.has(next.simplified)) return invalid();
+  if (usedWords.has(next.simplified)) return invalid('invalid', 'already-used');
 
   const connectionType = classifyConnection(prev, next);
-  if (connectionType === 'invalid') return invalid();
+  if (connectionType === 'invalid') return invalid('invalid', 'no-connection');
 
   // Advanced mode: only exact character matches are allowed
-  if (chainMode === 'advanced' && connectionType !== 'exactChar') return invalid('exactChar');
+  if (chainMode === 'advanced' && connectionType !== 'exactChar') return invalid('exactChar', 'advanced-only');
 
   const base = BASE_SCORES[connectionType];
   const cb = next.isChengyu ? 5 : 0;

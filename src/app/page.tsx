@@ -352,6 +352,27 @@ function SoloMode() {
   );
 }
 
+// ── My Vocabulary section ─────────────────────────────────────────────────────
+
+function MyVocabulary() {
+  return (
+    <Link
+      href="/vocabulary"
+      className="group flex items-center gap-4 p-5 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-emerald-500 rounded-2xl transition-all"
+    >
+      <span className="text-3xl">📒</span>
+      <div className="flex-1">
+        <div className="flex items-baseline gap-2">
+          <span className="font-semibold text-lg">My Vocabulary</span>
+          <span className="text-slate-500 text-sm">我的词汇</span>
+        </div>
+        <p className="text-slate-400 text-sm mt-0.5">Review the words you saved from Practice sessions.</p>
+      </div>
+      <span className="text-slate-600 group-hover:text-emerald-400 transition-colors text-xl">→</span>
+    </Link>
+  );
+}
+
 // ── Pass & Play section ───────────────────────────────────────────────────────
 
 function PassAndPlay() {
@@ -436,6 +457,12 @@ export default function Home() {
 
           <SoloMode />
           <PassAndPlay />
+        </div>
+
+        {/* Learning */}
+        <div className="flex flex-col gap-3">
+          <p className="text-xs text-slate-600 uppercase tracking-wider px-1">Learning</p>
+          <MyVocabulary />
         </div>
 
       </div>

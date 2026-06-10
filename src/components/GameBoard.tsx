@@ -2,14 +2,15 @@
 
 import { useState, useEffect, useRef, KeyboardEvent } from 'react';
 import VocabReview from '@/components/VocabReview';
+import SaveWordsPanel from '@/components/SaveWordsPanel';
 
 function shortMeaning(english: string, n = 2) {
   return english.split(';').slice(0, n).join(';').trim();
 }
 import type { ChainEntry, GameMode, GameOverReason, VsSubmode, ComputerLevel, ChainMode } from '@/hooks/useGameState';
-import type { MoveResult, ConnectionType } from '@/lib/gameRules';
+import type { MoveResult, ConnectionType, InvalidReason } from '@/lib/gameRules';
 import { calcSpeedMultiplier } from '@/lib/gameRules';
-import { getInitialFamilyDisplay, getCompatibleFinals } from '@/lib/pinyin';
+import { getInitialFamilyDisplay, getCompatibleFinals, toToneMarks } from '@/lib/pinyin';
 
 const CONNECTION_LABELS: Record<ConnectionType, string> = {
   exactChar: 'Exact character +10',
@@ -30,6 +31,38 @@ const CONNECTION_COLORS: Record<ConnectionType, string> = {
   weakMusicalFinal: 'text-amber-400',
   invalid: 'text-red-400',
 };
+
+const REASON_MESSAGES: Record<InvalidReason, string> = {
+  'not-found': 'Not found in the dictionary',
+  'already-used': 'Already used in this chain',
+  'no-connection': 'Doesn’t connect to the previous word',
+  'advanced-only': 'Advanced Mode accepts exact character matches only',
+};
+
+function FeedbackBanner({ result }: { result: MoveResult }) {
+  if (result.valid) {
+    const ct = result.connectionType as ConnectionType;
+    const bonus = result.chengyuBonus || result.lengthBonus;
+    const bonusLabel = result.chengyuBonus ? `成语 +${result.chengyuBonus}` : result.lengthBonus ? `length +${result.lengthBonus}` : null;
+    return (
+      <div className="animate-fb-pop mb-2 rounded-xl border border-emerald-700/60 bg-emerald-900/30 px-3 py-2">
+        <div className="flex items-center justify-between gap-2">
+          <span className={`text-sm font-semibold ${CONNECTION_COLORS[ct]}`}>✓ {CONNECTION_LABELS[ct]}</span>
+          <span className="text-emerald-300 font-bold text-lg leading-none">+{result.totalScore}</span>
+        </div>
+        <div className="text-slate-400 text-xs mt-1 font-mono">
+          ({result.baseScore} base{bonusLabel ? ` + ${bonusLabel}` : ''}) × {result.speedMultiplier.toFixed(1)} speed = +{result.totalScore} pts
+        </div>
+      </div>
+    );
+  }
+  const reason: InvalidReason = result.reason ?? 'no-connection';
+  return (
+    <div className="animate-fb-shake mb-2 rounded-xl border border-red-700/60 bg-red-900/25 px-3 py-2">
+      <span className="text-red-400 text-sm font-semibold">✗ {REASON_MESSAGES[reason]}</span>
+    </div>
+  );
+}
 
 const SUBMODE_LABELS: Record<VsSubmode, string> = {
   'first-to-x': '🏆 First to 50',
@@ -187,6 +220,10 @@ export default function GameBoard({
   }, [status, isComputerThinking, currentPlayer]);
   useEffect(() => { if (lastMoveResult?.valid) setInput(''); }, [chain.length, lastMoveResult?.valid]);
 
+  // Re-key the feedback banner on every new result so its animation replays.
+  const [feedbackKey, setFeedbackKey] = useState(0);
+  useEffect(() => { if (lastMoveResult) setFeedbackKey(k => k + 1); }, [lastMoveResult]);
+
   const imeHint = (() => {
     if (typeof navigator === 'undefined') return null;
     const ua = navigator.userAgent;
@@ -295,6 +332,18 @@ export default function GameBoard({
         >
           Play Again
         </button>
+
+        {mode === 'solo' && (
+          <SaveWordsPanel
+            words={chain
+              .filter(e => e.playedBy !== 'start')
+              .map(e => ({
+                hanzi: e.word.simplified,
+                pinyin: toToneMarks(e.word.pinyin),
+                meaning: shortMeaning(e.word.english),
+              }))}
+          />
+        )}
 
         <VocabReview chain={chain} />
       </div>
@@ -487,6 +536,9 @@ export default function GameBoard({
 
       {/* Input */}
       <div className="flex-none px-4 py-4 border-t border-slate-700">
+        {lastMoveResult && (
+          <FeedbackBanner key={feedbackKey} result={lastMoveResult} />
+        )}
         <div className="flex gap-2">
           <input
             ref={inputRef}
@@ -506,13 +558,6 @@ export default function GameBoard({
             Play
           </button>
         </div>
-        {lastMoveResult && !lastMoveResult.valid && (
-          <div className="text-red-400 text-sm mt-1">
-            {lastMoveResult.connectionType === 'exactChar' && chainMode === 'advanced'
-              ? '✗ Advanced Mode only accepts exact character matches'
-              : '✗ Word not found or invalid connection'}
-          </div>
-        )}
         {imeHint && (
           <div className="text-slate-600 text-xs mt-1.5">{imeHint}</div>
         )}

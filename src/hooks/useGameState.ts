@@ -275,7 +275,7 @@ export function useGameState() {
     const entry = lookupWord(simplified);
     if (!entry) {
       playSound('wrong');
-      setLastMoveResult({ valid: false, connectionType: 'invalid', baseScore: 0, lengthBonus: 0, chengyuBonus: 0, speedMultiplier: 1, totalScore: 0 });
+      setLastMoveResult({ valid: false, connectionType: 'invalid', baseScore: 0, lengthBonus: 0, chengyuBonus: 0, speedMultiplier: 1, totalScore: 0, reason: 'not-found' });
       if (isLivesMode) { stopTimer(); handleTimeoutRef.current(); }
       return;
     }
